@@ -5,6 +5,7 @@ import SwiperCore from 'swiper';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css/bundle';
 import ListingItem from '../components/ListingItem';
+import { getCoverImageUrl } from '../utils/getCoverImageUrl';
 
 export default function Home() {
   const [offerListings, setOfferListings] = useState([]);
@@ -74,13 +75,14 @@ export default function Home() {
         <Swiper navigation>
           {offerListings.map((listing) => (
             <SwiperSlide key={listing._id}>
-              <div
-                style={{
-                  background: `url(${listing.imageUrls[0]}) center no-repeat`,
-                  backgroundSize: 'cover',
-                }}
-                className='h-125'
-              ></div>
+              <div className='h-125 w-full'>
+                <img
+                  src={getCoverImageUrl(listing.imageUrls)}
+                  alt={listing.name}
+                  className='h-full w-full object-cover'
+                  loading='eager'
+                />
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>

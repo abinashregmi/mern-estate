@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import Contact from '../components/Contact';
 import { formatPrice } from '../utils/formatPrice';
+import { getCoverImageUrl } from '../utils/getCoverImageUrl';
 
 // https://sabe.io/blog/javascript-format-numbers-commas#:~:text=The%20best%20way%20to%20format,format%20the%20number%20with%20commas.
 
@@ -62,13 +63,17 @@ export default function Listing() {
           <Swiper navigation>
             {listing.imageUrls.map((url) => (
               <SwiperSlide key={url}>
-                <div
-                  className='h-[550px]'
-                  style={{
-                    background: `url(${url}) center no-repeat`,
-                    backgroundSize: 'cover',
-                  }}
-                ></div>
+                <div className='h-[550px] w-full'>
+                  <img
+                    src={url || getCoverImageUrl(listing.imageUrls)}
+                    alt={listing.name}
+                    className='h-full w-full object-cover'
+                    loading='eager'
+                    onError={(event) => {
+                      event.currentTarget.src = getCoverImageUrl(listing.imageUrls);
+                    }}
+                  />
+                </div>
               </SwiperSlide>
             ))}
           </Swiper>
