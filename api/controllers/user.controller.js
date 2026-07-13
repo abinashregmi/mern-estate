@@ -59,3 +59,4 @@ export const getUserListings = async (req, res, next) => {
     return next(errorHandler(403, 'You can access only your listings!'));
   }
 };
+
