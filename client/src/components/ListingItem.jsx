@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MdLocationOn } from 'react-icons/md';
+import { formatPrice } from '../utils/formatPrice';
 
 export default function ListingItem({ listing }) {
   if (!listing) return null;
@@ -31,7 +32,7 @@ export default function ListingItem({ listing }) {
             {listing.description}
           </p>
           <p className='text-slate-500 mt-2 font-semibold'>
-            Rs. {(price ?? 0).toLocaleString('en-US')}
+            {formatPrice(price)}
             {listing.type === 'rent' && ' / month'}
           </p>
           <div className='text-slate-700 flex gap-4'>

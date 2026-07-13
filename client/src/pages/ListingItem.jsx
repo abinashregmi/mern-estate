@@ -15,6 +15,7 @@ import {
   FaShare,
 } from 'react-icons/fa';
 import Contact from '../components/Contact';
+import { formatPrice } from '../utils/formatPrice';
 
 // https://sabe.io/blog/javascript-format-numbers-commas#:~:text=The%20best%20way%20to%20format,format%20the%20number%20with%20commas.
 
@@ -27,7 +28,6 @@ export default function Listing() {
   const [contact, setContact] = useState(false);
   const params = useParams();
   const { currentUser } = useSelector((state) => state.user);
-  const formatPrice = (value) => `Rs. ${Number(value ?? 0).toLocaleString('en-US')}`;
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -91,9 +91,7 @@ export default function Listing() {
           )}
           <div className='flex flex-col max-w-4xl mx-auto p-3 my-7 gap-4'>
             <p className='text-2xl font-semibold'>
-              {listing.name} - {formatPrice(
-                listing.offer ? listing.discountPrice : listing.regularPrice,
-              )}
+              {listing.name} - {formatPrice(listing.offer ? listing.discountPrice : listing.regularPrice)}
               {listing.type === 'rent' && ' / month'}
             </p>
             <p className='flex items-center mt-6 gap-2 text-slate-600  text-sm'>
@@ -106,7 +104,7 @@ export default function Listing() {
               </p>
               {listing.offer && (
                 <p className='bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                  Rs. {(+listing.regularPrice - +listing.discountPrice).toLocaleString('en-US')} OFF
+                  {formatPrice(+listing.regularPrice - +listing.discountPrice)} OFF
                 </p>
               )}
             </div>
