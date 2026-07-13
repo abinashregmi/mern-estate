@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const params = useParams();
+  const isEditMode = Boolean(params.listingId);
 
   const inputStyle =
     'border p-3 rounded-lg bg-white border-gray-300 w-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
@@ -29,6 +31,46 @@ export default function CreateListing() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      if (!isEditMode) return;
+
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/listing/get/${params.listingId}`);
+        const data = await res.json();
+
+        if (data.success === false) {
+          setError(data.message || 'Failed to load listing');
+          setLoading(false);
+          return;
+        }
+
+        setFormData({
+          imageUrls: data.imageUrls || [],
+          name: data.name || '',
+          description: data.description || '',
+          address: data.address || '',
+          type: data.type || '',
+          bedrooms: data.bedrooms ?? 1,
+          bathrooms: data.bathrooms ?? 1,
+          regularPrice: data.regularPrice ?? 1000,
+          discountPrice: data.discountPrice ?? 500,
+          parking: Boolean(data.parking),
+          furnished: Boolean(data.furnished),
+          offer: Boolean(data.offer),
+        });
+        setError(false);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListing();
+  }, [isEditMode, params.listingId]);
 
   const handleImageSubmit = (e) => {
     e.preventDefault();
@@ -123,7 +165,7 @@ export default function CreateListing() {
       if (formData.imageUrls.length < 1) {
         return setError('You must upload at least one image');
       }
-      if (+formData.regularPrice < +formData.discountedPrice) {
+      if (+formData.regularPrice < +formData.discountPrice) {
         return setError('Discounted price must be lower than regular price');
       }
       if (!formData.type) {
@@ -133,7 +175,11 @@ export default function CreateListing() {
       setLoading(true);
       setError(false);
 
-      const res = await fetch('/api/listing/create', {
+      const res = await fetch(
+        isEditMode
+          ? `/api/listing/update/${params.listingId}`
+          : '/api/listing/create',
+        {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,7 +188,8 @@ export default function CreateListing() {
           ...formData,
           userRef: currentUser._id,
         }),
-      });
+        }
+      );
 
       const data = await res.json();
       setLoading(false);
@@ -152,7 +199,7 @@ export default function CreateListing() {
         return;
       }
 
-      navigate(`/listing/${data._id}`);
+      navigate(`/listing/${data._id || params.listingId}`);
     } catch (error) {
       setError(error.message);
       setLoading(false);
@@ -162,7 +209,7 @@ export default function CreateListing() {
   return (
     <main className='p-3 max-w-4xl mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>
-        Create a Listing
+        {isEditMode ? 'Update Listing' : 'Create a Listing'}
       </h1>
       <form onSubmit={handleSubmit} className='flex flex-col sm:flex-row gap-6'>
         {/* LEFT COLUMN */}
@@ -380,7 +427,7 @@ export default function CreateListing() {
             className='p-3 bg-slate-700 text-white rounded-lg uppercase
             hover:opacity-95 disabled:opacity-80'
           >
-            {loading ? 'Creating...' : 'Create Listing'}
+            {loading ? (isEditMode ? 'Updating...' : 'Creating...') : isEditMode ? 'Update Listing' : 'Create Listing'}
           </button>
 
           {error && <p className='text-red-700 text-sm'>{error}</p>}
