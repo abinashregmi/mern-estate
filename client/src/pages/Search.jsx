@@ -54,12 +54,17 @@ export default function Search() {
       const searchQuery = urlParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
-      if (data.length > 8) {
+
+      console.log('fetched listings:', data); // TEMP: check this in your console
+
+      const safeData = Array.isArray(data) ? data.filter(Boolean) : [];
+
+      if (safeData.length > 8) {
         setShowMore(true);
       } else {
         setShowMore(false);
       }
-      setListings(data);
+      setListings(safeData);
       setLoading(false);
     };
 
@@ -116,10 +121,11 @@ export default function Search() {
     const searchQuery = urlParams.toString();
     const res = await fetch(`/api/listing/get?${searchQuery}`);
     const data = await res.json();
-    if (data.length < 9) {
+    const safeData = Array.isArray(data) ? data.filter(Boolean) : [];
+    if (safeData.length < 9) {
       setShowMore(false);
     }
-    setListings([...listings, ...data]);
+    setListings([...listings, ...safeData]);
   };
 
   return (
